@@ -4,6 +4,7 @@ import os
 import random
 import time
 from dataclasses import dataclass
+from datetime import datetime
 
 import torch
 import torch.nn as nn
@@ -304,11 +305,21 @@ def main():
             "val_top1": val_stats["top1"],
             "val_top5": val_stats["top5"],
         }
-        torch.save(state, os.path.join(args.output_dir, "last.pt"))
+
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        ckpt_name = (
+            f"last-ep{epoch:03d}-top1_{val_stats['top1']:.2f}-"
+            f"top5_{val_stats['top5']:.2f}-{timestamp}.pt"
+        )
+        torch.save(state, os.path.join(args.output_dir, ckpt_name))
 
         if val_stats["top1"] > best_top1:
             best_top1 = val_stats["top1"]
-            torch.save(state, os.path.join(args.output_dir, "best.pt"))
+            best_name = (
+                f"best-ep{epoch:03d}-top1_{val_stats['top1']:.2f}-"
+                f"top5_{val_stats['top5']:.2f}-{timestamp}.pt"
+            )
+            torch.save(state, os.path.join(args.output_dir, best_name))
 
     print(f"Training complete. Best Val Top1: {best_top1:.2f}")
 
